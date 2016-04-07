@@ -112,14 +112,14 @@ class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
 
   protected def bsonJson[T](entity: T)(implicit writes: Writes[T]) = BSONFormats.toBSON(Json.toJson(entity)).get
 
-  private def modifierForInsert(uri: Seq[URI], expectation: ExpectationMongo): BSONDocument = {
+  private def modifierForInsert(uriSeq: Seq[URI], expectation: ExpectationMongo): BSONDocument = {
     val delay = optionalValues(expectation.delay, "expectation.delay", BSONLong)
     val resultCode = optionalValues(expectation.resultCode, "expectation.resultCode", BSONInteger)
     BSONDocument(
       "$setOnInsert" -> BSONDocument("expiry" -> BSONDateTime(DateTimeUtils.now.getMillis + expectation.toLive.toMillis)),
       "$setOnInsert" -> BSONDocument("expectation.testId" -> expectation.testId),
       "$set" -> BSONDocument("expectation.template" -> expectation.template),
-      "$set" -> BSONDocument("uri" -> Json.toJson(uri.toString))
+      "$set" -> BSONDocument("uri" -> BSONArray(uriSeq.map(uri => BSONString(uri.toASCIIString))))
     ) ++ delay ++ resultCode
   }
 
