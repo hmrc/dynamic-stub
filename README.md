@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/hmrc/dynamic-stub.svg?branch=master)](https://travis-ci.org/hmrc/dynamic-stub) [ ![Download](https://api.bintray.com/packages/hmrc/releases/dynamic-stub/images/download.svg) ](https://bintray.com/hmrc/releases/dynamic-stub/_latestVersion)
 
-This is a placeholder README.md for a new repository
+Library to support dynamic data creation in stub microservices. This allows tests to call a stub service and create/teardown test their own data rather than use hardcoded values.
 
 ### License
 
