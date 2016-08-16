@@ -44,8 +44,8 @@ private object AppDependencies {
 
   val compile = Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
-    "uk.gov.hmrc" %% "play-reactivemongo" % "4.5.0" % "provided",
-    "uk.gov.hmrc" %% "time" % "2.0.0"
+    "uk.gov.hmrc" %% "play-reactivemongo" % "4.8.0" % "provided",
+    "uk.gov.hmrc" %% "time" % "3.0.0"
   )
 
   trait TestDependencies {
@@ -59,7 +59,7 @@ private object AppDependencies {
         "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
         "org.scalatest" %% "scalatest" % "2.2.4" % scope,
         "org.scalactic" %% "scalactic" % "2.2.2" % scope,
-        "uk.gov.hmrc" %% "hmrctest" % "1.4.0" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "1.8.0" % scope,
         "org.pegdown" % "pegdown" % "1.5.0" % scope
       )
     }.test
