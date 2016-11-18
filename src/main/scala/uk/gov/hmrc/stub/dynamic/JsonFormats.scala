@@ -40,7 +40,7 @@ trait JsonFormats {
     * to an instance of ListValue which is like a sequence of maps
     */
   private def listReads(children: Seq[ConfigKey]) = Reads[ListValue] { jv =>
-    jv \ "values" match {
+    (jv \ "values").get match {
       case JsArray(elements) => JsSuccess(ListValue(elements.map(extract(children))))
       case _ => JsError()
     }
@@ -54,7 +54,7 @@ trait JsonFormats {
     * to an instance of ObjectValue which is like a map
     */
   private def objectReads(children: Seq[ConfigKey]) = Reads[ObjectValue] { jv =>
-    jv \ "value" match {
+    (jv \ "value").get match {
       case obj@JsObject(_) => JsSuccess(ObjectValue(extract(children)(obj)))
       case _ => JsError()
     }

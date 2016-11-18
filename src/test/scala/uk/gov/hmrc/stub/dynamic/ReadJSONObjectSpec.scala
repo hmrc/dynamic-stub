@@ -17,7 +17,7 @@
 package uk.gov.hmrc.stub.dynamic
 
 import org.scalatest.BeforeAndAfterEach
-import play.api.libs.json.{JsUndefined, Json}
+import play.api.libs.json.{JsNull, JsUndefined, Json}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats{
@@ -140,7 +140,7 @@ class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonForma
 
     "when JSON is undefined" in {
       val readList = mapReads(Seq(ObjectConfigKey("obj", Seq(singleKey))))
-      val result = readList.reads(JsUndefined(""))
+      val result = readList.reads(JsNull)
 
       result.isSuccess shouldBe true
 

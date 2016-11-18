@@ -33,7 +33,7 @@ trait DynamicStubDataController extends ServiceStubResponse with Controller with
     request.body.validate[Expectation].fold(
       errors => {
         Logger.error(s"Received error from parsing json $errors")
-        Future.successful(BadRequest(Json.obj("message" -> JsError.toFlatJson(errors))))
+        Future.successful(BadRequest(Json.obj("message" -> JsError.toJson(errors))))
       },
       update => {
         saveToCache(update).map {
