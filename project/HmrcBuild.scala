@@ -17,6 +17,7 @@
 import sbt.Keys._
 import sbt._
 import uk.gov.hmrc.versioning.SbtGitVersioning
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 object HmrcBuild extends Build {
 
@@ -31,10 +32,12 @@ object HmrcBuild extends Build {
       libraryDependencies ++= AppDependencies(),
       crossScalaVersions := Seq("2.11.7"),
       resolvers := Seq(
-        Resolver.bintrayRepo("hmrc", "releases"),
-        Resolver.typesafeRepo("releases")
-      )
-    )
+        Resolver.url("HMRC Sbt Plugin Releases", url("https://dl.bintray.com/hmrc/sbt-plugin-releases"))(Resolver.ivyStylePatterns),
+        "HMRC Releases" at "https://dl.bintray.com/hmrc/releases"
+      ),
+      majorVersion := 0
+
+  )
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 }
 
@@ -44,8 +47,8 @@ private object AppDependencies {
 
   val compile = Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
-    "uk.gov.hmrc" %% "play-reactivemongo" % "5.2.0" % "provided",
-    "uk.gov.hmrc" %% "time" % "3.0.0"
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0" % "provided",
+    "uk.gov.hmrc" %% "time" % "3.2.0"
   )
 
   trait TestDependencies {
@@ -59,7 +62,7 @@ private object AppDependencies {
         "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
         "org.scalatest" %% "scalatest" % "2.2.4" % scope,
         "org.scalactic" %% "scalactic" % "2.2.2" % scope,
-        "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
         "org.pegdown" % "pegdown" % "1.5.0" % scope
       )
     }.test

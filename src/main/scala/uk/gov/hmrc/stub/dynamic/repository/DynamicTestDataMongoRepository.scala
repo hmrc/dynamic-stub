@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import play.modules.reactivemongo.MongoDbConnection
 import reactivemongo.api.DB
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson._
-import reactivemongo.json.BSONFormats
+import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONInteger, BSONLong, BSONObjectID, BSONString, BSONValue}
+import reactivemongo.play.json.ImplicitBSONHandlers._
+import reactivemongo.play.json.BSONFormats
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import uk.gov.hmrc.mongo.{AtomicUpdate, BSONBuilderHelpers, DatabaseUpdate, ReactiveRepository}
 import uk.gov.hmrc.time.DateTimeUtils
