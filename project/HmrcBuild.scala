@@ -26,7 +26,7 @@ object HmrcBuild extends Build {
   val appName = "dynamic-stub"
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning)
+    .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
     .settings(
       scalaVersion := "2.11.7",
       libraryDependencies ++= AppDependencies(),
