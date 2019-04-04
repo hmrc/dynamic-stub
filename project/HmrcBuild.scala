@@ -47,7 +47,7 @@ private object AppDependencies {
 
   val compile = Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0" % "provided",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0" % "provided",
     "uk.gov.hmrc" %% "time" % "3.2.0"
   )
 
