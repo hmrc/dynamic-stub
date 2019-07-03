@@ -133,7 +133,7 @@ class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
   }
 
   override def removeById(id: String)(implicit ec: ExecutionContext): Future[WriteResult] = {
-    removeById(BSONObjectID(id))
+    removeById(BSONObjectID(id.getBytes))
   }
 
   private def unset(key: String): BSONDocument = BSONDocument("$unset" -> BSONDocument(key -> 0L))
