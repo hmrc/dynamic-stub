@@ -16,13 +16,12 @@
 
 import sbt.Keys._
 import sbt._
+import uk.gov.hmrc.SbtArtifactory.autoImport.makePublicallyAvailableOnBintray
+import uk.gov.hmrc._
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-import uk.gov.hmrc.SbtArtifactory.autoImport.makePublicallyAvailableOnBintray
 
 object HmrcBuild extends Build {
-
-  import uk.gov.hmrc._
 
   val appName = "dynamic-stub"
 
@@ -48,9 +47,9 @@ private object AppDependencies {
   import play.core.PlayVersion
 
   val compile = Seq(
-    "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-25" % "provided",
-    "uk.gov.hmrc" %% "time" % "3.6.0"
+    "com.typesafe.play" %% "play"                 % PlayVersion.current % "provided",
+    "uk.gov.hmrc"       %% "simple-reactivemongo" % "7.23.0-play-25"    % "provided",
+    "uk.gov.hmrc"       %% "time"                 % "3.6.0"
   )
 
   trait TestDependencies {
@@ -61,11 +60,11 @@ private object AppDependencies {
   object Test {
     def apply() = new TestDependencies {
       override lazy val test = Seq(
-        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-        "org.scalatest" %% "scalatest" % "2.2.4" % scope,
-        "org.scalactic" %% "scalactic" % "2.2.2" % scope,
-        "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-25" % scope,
-        "org.pegdown" % "pegdown" % "1.5.0" % scope
+        "com.typesafe.play" %% "play-test"  % PlayVersion.current % scope,
+        "uk.gov.hmrc"       %% "hmrctest"   % "3.9.0-play-25"     % scope,
+        "org.scalatest"     %% "scalatest"  % "2.2.4"             % scope,
+        "org.scalactic"     %% "scalactic"  % "2.2.2"             % scope,
+        "org.pegdown"       %  "pegdown"    % "1.6.0"             % scope
       )
     }.test
   }
