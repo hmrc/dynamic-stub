@@ -44,10 +44,10 @@ trait ServiceStubResponse {
       Future.successful(None)
     } else {
       val mongoExpectation = ExpectationMongo(expectation.testId,
-        expectation.endpoint.bodyTemplate(new DataSupplier(expectation.endpoint.defaults ++ expectation.data)).body,
-        expectation.delay,
-        expectation.resultCode,
-        expectation.timeToLive)
+                                              expectation.endpoint.bodyTemplate(new DataSupplier(expectation.endpoint.defaults ++ expectation.data)).body,
+                                              expectation.delay,
+                                              expectation.resultCode,
+                                              expectation.timeToLive)
 
       cache.add(resources, mongoExpectation).map(
         update => {
@@ -62,10 +62,11 @@ trait ServiceStubResponse {
     getTestSessionId.fold(func) { key =>
       cache.findByIdAndUri(key, query).flatMap(
         expectation => {
-          expectation.fold(func) { item => {
-            val result = Results.Status(item.expectation.resultCode.getOrElse(200))(item.expectation.template)
-            TimedEvent.delayedSuccess(item.expectation.delay.getOrElse(0), result)
-          }
+          expectation.fold(func) { item =>
+            {
+              val result = Results.Status(item.expectation.resultCode.getOrElse(200))(item.expectation.template)
+              TimedEvent.delayedSuccess(item.expectation.delay.getOrElse(0), result)
+            }
           }
         })
     }

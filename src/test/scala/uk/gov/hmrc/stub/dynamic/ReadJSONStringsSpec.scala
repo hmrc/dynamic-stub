@@ -22,7 +22,6 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class ReadJSONStringsSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats {
 
-
   override def endpoint: EndPoint = ???
 
   val singleKey = SingleConfigKey("bla")

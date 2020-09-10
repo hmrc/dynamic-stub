@@ -26,7 +26,7 @@ import scala.concurrent.Future
 
 trait DynamicStubDataController extends ServiceStubResponse with Controller with JsonFormats {
 
-  def expectationUrl(id:BSONObjectID): Call
+  def expectationUrl(id: BSONObjectID): Call
 
   // Record a stub service definition. Return the URI's which have been stubbed from the request and the associated remove URI in the Location header.
   def recordService = Action.async(BodyParsers.parse.json) { implicit request =>

@@ -22,7 +22,6 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats {
 
-
   override def endpoint: EndPoint = ???
 
   val singleKey = SingleConfigKey("bla")
@@ -50,10 +49,10 @@ class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats
           "collection",
           List(SingleConfigKey("bla"), SingleConfigKey("ble"))
         ) ->
-        ListValue(Seq(Map(
-          singleKey -> StringValue("aValue"),
-          singleKey2 -> StringValue("aValue2")
-        ))))
+          ListValue(Seq(Map(
+            singleKey -> StringValue("aValue"),
+            singleKey2 -> StringValue("aValue2")
+          ))))
     }
 
     "read list with multiple elements" in {
@@ -70,8 +69,8 @@ class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats
 
       result.get shouldBe Map(MultiConfigKey("collection", List(SingleConfigKey("bla"))) ->
         ListValue(Seq(
-        Map(singleKey -> StringValue("aValue")),
-        Map(singleKey -> StringValue("aValue2")))))
+          Map(singleKey -> StringValue("aValue")),
+          Map(singleKey -> StringValue("aValue2")))))
     }
 
     "read recursive list" in {
@@ -88,10 +87,10 @@ class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats
       result.isSuccess shouldBe true
 
       result.get shouldBe Map(MultiConfigKey("collection",
-        List(MultiConfigKey("innerCollection",List(SingleConfigKey("bla"))))) ->
+        List(MultiConfigKey("innerCollection", List(SingleConfigKey("bla"))))) ->
         ListValue(List(Map(MultiConfigKey("innerCollection",
           List(SingleConfigKey("bla"))) -> ListValue(List(Map(SingleConfigKey("bla") -> StringValue("aValue"))))),
-          Map())))
+                       Map())))
     }
 
     "when declared value is not provided" in {
@@ -109,9 +108,9 @@ class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats
 
       result.get shouldBe Map(
         MultiConfigKey("collection", List(SingleConfigKey("bla"), SingleConfigKey("ble"))) ->
-        ListValue(Seq(Map(
-          singleKey -> StringValue("aValue")
-        ))))
+          ListValue(Seq(Map(
+            singleKey -> StringValue("aValue")
+          ))))
     }
 
     "read object within a list" in {
@@ -128,11 +127,10 @@ class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats
       result.isSuccess shouldBe true
 
       result.get shouldBe Map(MultiConfigKey("collection",
-        List(ObjectConfigKey("innerObject",List(SingleConfigKey("bla"))))) ->
+        List(ObjectConfigKey("innerObject", List(SingleConfigKey("bla"))))) ->
         ListValue(List(Map(ObjectConfigKey("innerObject", List(SingleConfigKey("bla")))
           -> ObjectValue(Map(SingleConfigKey("bla") -> StringValue("aValue")))))))
     }
-
 
     "when JSON is undefined" in {
       val readList = mapReads(Seq(MultiConfigKey("collection", Seq(singleKey))))
