@@ -27,8 +27,11 @@ object HmrcBuild extends Build {
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
+    .settings(ScalariformSettings())
+    .settings(ScoverageSettings())
+    .settings(SilencerSettings())
     .settings(
-      scalaVersion := "2.11.7",
+      scalaVersion := "2.11.12",
       libraryDependencies ++= AppDependencies(),
       crossScalaVersions := Seq("2.11.7"),
       resolvers := Seq(

@@ -20,8 +20,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.{JsNull, JsUndefined, Json}
 import uk.gov.hmrc.play.test.UnitSpec
 
-class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats{
-
+class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats {
 
   override def endpoint: EndPoint = ???
 
@@ -48,9 +47,9 @@ class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonForma
           "obj",
           List(SingleConfigKey("bla"))
         ) ->
-        ObjectValue(Map(
-          singleKey -> StringValue("aValue")
-        )))
+          ObjectValue(Map(
+            singleKey -> StringValue("aValue")
+          )))
     }
 
     "read object with multiple fields" in {
@@ -94,7 +93,7 @@ class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonForma
       result.isSuccess shouldBe true
 
       result.get shouldBe Map(ObjectConfigKey("obj",
-        List(ObjectConfigKey("innerObject",List(SingleConfigKey("bla"))))) ->
+        List(ObjectConfigKey("innerObject", List(SingleConfigKey("bla"))))) ->
         ObjectValue(Map(ObjectConfigKey("innerObject", List(SingleConfigKey("bla")))
           -> ObjectValue(Map(SingleConfigKey("bla") -> StringValue("aValue"))))))
     }
@@ -113,7 +112,7 @@ class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonForma
       result.isSuccess shouldBe true
 
       result.get shouldBe Map(ObjectConfigKey("obj",
-        List(MultiConfigKey("innerCollection",List(SingleConfigKey("bla"))))) ->
+        List(MultiConfigKey("innerCollection", List(SingleConfigKey("bla"))))) ->
         ObjectValue(Map(MultiConfigKey("innerCollection", List(SingleConfigKey("bla")))
           -> ListValue(List(Map(SingleConfigKey("bla") -> StringValue("aValue")))))))
     }
@@ -133,9 +132,9 @@ class ReadJSONObjectSpec extends UnitSpec with BeforeAndAfterEach with JsonForma
 
       result.get shouldBe Map(
         ObjectConfigKey("obj", List(SingleConfigKey("bla"), SingleConfigKey("ble"))) ->
-        ObjectValue(Map(
-          singleKey -> StringValue("aValue")
-        )))
+          ObjectValue(Map(
+            singleKey -> StringValue("aValue")
+          )))
     }
 
     "when JSON is undefined" in {
