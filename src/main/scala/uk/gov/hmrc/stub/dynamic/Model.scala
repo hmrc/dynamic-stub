@@ -36,14 +36,12 @@ trait EndPoint {
   def urlTemplates: Seq[UrlTemplate]
 }
 
-
 class DataSupplier(data: Map[ConfigKey, ValueType]) {
   def apply(key: SingleConfigKey): String = data(key).asInstanceOf[StringValue].value
   def apply(key: ObjectConfigKey): DataSupplier = new DataSupplier(data(key).asInstanceOf[ObjectValue].data)
   def apply(key: MultiConfigKey): Seq[DataSupplier] = data(key).asInstanceOf[ListValue].data.map(new DataSupplier(_))
   def isDefinedAt(key: ConfigKey): Boolean = data.isDefinedAt(key)
 }
-
 
 sealed trait ValueType
 case class StringValue(value: String) extends ValueType
@@ -55,11 +53,10 @@ case class SingleConfigKey(name: String) extends ConfigKey
 case class ObjectConfigKey(name: String, children: Seq[ConfigKey]) extends ConfigKey
 case class MultiConfigKey(name: String, children: Seq[ConfigKey]) extends ConfigKey
 
-
-case class Expectation(testId: String,
-                       endpoint: EndPoint,
-                       data: Map[ConfigKey, ValueType],
-                       delay: Option[Long],
+case class Expectation(testId:     String,
+                       endpoint:   EndPoint,
+                       data:       Map[ConfigKey, ValueType],
+                       delay:      Option[Long],
                        resultCode: Option[Int],
                        timeToLive: Option[Long]) {
   def keys = data.keys.toSet

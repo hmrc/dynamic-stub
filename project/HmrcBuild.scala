@@ -28,9 +28,9 @@ object HmrcBuild extends Build {
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
     .settings(
-      scalaVersion := "2.11.7",
+      scalaVersion := "2.11.12",
       libraryDependencies ++= AppDependencies(),
-      crossScalaVersions := Seq("2.11.7"),
+      crossScalaVersions := Seq("2.11.12"),
       resolvers := Seq(
         Resolver.url("HMRC Sbt Plugin Releases", url("https://dl.bintray.com/hmrc/sbt-plugin-releases"))(Resolver.ivyStylePatterns),
         "HMRC Releases" at "https://dl.bintray.com/hmrc/releases"
@@ -40,6 +40,9 @@ object HmrcBuild extends Build {
 
   )
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
+    .settings(ScalariformSettings())
+    .settings(ScoverageSettings())
+    .settings(SilencerSettings())
 }
 
 private object AppDependencies {

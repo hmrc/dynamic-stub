@@ -36,9 +36,9 @@ import scala.collection.Seq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ExpectationMongo(testId: String,
-                            template: String,
-                            delay: Option[Long],
+case class ExpectationMongo(testId:     String,
+                            template:   String,
+                            delay:      Option[Long],
                             resultCode: Option[Int],
                             timeToLive: Option[Long]) {
 
@@ -61,11 +61,12 @@ object ExpectationSave {
         ((__ \ "_id").read[BSONObjectID] and
           (__ \ "uri").read[Seq[String]] and
           (__ \ "expectation").read[ExpectationMongo]
-          ) {
-          (id, uri, expectation) => {
-            ExpectationSave(id, uri.map(new URI(_)), expectation)
+        ) {
+            (id, uri, expectation) =>
+              {
+                ExpectationSave(id, uri.map(new URI(_)), expectation)
+              }
           }
-        }
 
       implicit val urlWrites = Writes[URI] {
         url => JsString(url.toString)
@@ -85,9 +86,9 @@ object DynamicRepository extends MongoDbConnection {
 
 class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
   extends ReactiveRepository[ExpectationSave, BSONObjectID]("dynamic", mongo, ExpectationSave.mongoFormats, ReactiveMongoFormats.objectIdFormats)
-    with AtomicUpdate[ExpectationSave]
-    with DynamicTestDataRepository
-    with BSONBuilderHelpers {
+  with AtomicUpdate[ExpectationSave]
+  with DynamicTestDataRepository
+  with BSONBuilderHelpers {
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[scala.Seq[Boolean]] = {
     // set to zero for per document TTL using 'expiry' attribute to define the actual expiry time.
@@ -100,7 +101,7 @@ class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
           Index(Seq("uri" -> IndexType.Ascending), name = Some("uriUnique"), unique = false)),
         collection.indexesManager.ensure(
           Index(
-            key = Seq("expiry" -> IndexType.Ascending),
+            key     = Seq("expiry" -> IndexType.Ascending),
             options = BSONDocument("expireAfterSeconds" -> expireAfterSeconds)))
       )
     )
