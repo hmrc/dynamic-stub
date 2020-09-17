@@ -16,20 +16,27 @@
 
 package uk.gov.hmrc.stub.dynamic
 
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json._
-import play.api.mvc.{Action, BodyParsers, Call, Controller}
+import play.api.mvc.{BaseController, Call, ControllerComponents}
 import reactivemongo.bson.BSONObjectID
+import uk.gov.hmrc.stub.dynamic.repository.DynamicTestDataRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait DynamicStubDataController extends ServiceStubResponse with Controller with JsonFormats {
-
-  def expectationUrl(id: BSONObjectID): Call
+@Singleton
+class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID ⇒ Call,
+                                           val cache:    DynamicTestDataRepository,
+                                           val endpoint: EndPoint)
+  (implicit ec: ExecutionContext,
+   val controllerComponents: ControllerComponents)
+  extends ServiceStubResponse
+  with BaseController
+  with JsonFormats {
 
   // Record a stub service definition. Return the URI's which have been stubbed from the request and the associated remove URI in the Location header.
-  def recordService = Action.async(BodyParsers.parse.json) { implicit request =>
+  def recordService = Action.async(parse.json) { implicit request =>
     request.body.validate[Expectation].fold(
       errors => {
         Logger.error(s"Received error from parsing json $errors")
@@ -38,7 +45,7 @@ trait DynamicStubDataController extends ServiceStubResponse with Controller with
       update => {
         saveToCache(update).map {
           case Some((uris, id)) => Created(Json.obj("uri" -> Json.toJson(uris.map(_.toString))))
-            .withHeaders("Location" -> expectationUrl(id).url)
+            .withHeaders("Location" -> removeUrl(id).url)
           case _ => BadRequest
         }
       }
@@ -46,7 +53,7 @@ trait DynamicStubDataController extends ServiceStubResponse with Controller with
   }
 
   // Remove the service definition.
-  def removeService(id: String) = Action.async { implicit request =>
+  def removeService(id: String) = Action.async { _ =>
     cache.removeById(id).map(_ => NoContent)
   }
 }

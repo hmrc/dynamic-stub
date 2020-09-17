@@ -49,10 +49,7 @@ trait ServiceStubResponse {
                                               expectation.resultCode,
                                               expectation.timeToLive)
 
-      cache.add(resources, mongoExpectation).map(
-        update => {
-          Some((resources, update.updateType.savedValue.id))
-        })
+      cache.add(resources, mongoExpectation).map(_.map(resources → _.id))
     }
   }
 
