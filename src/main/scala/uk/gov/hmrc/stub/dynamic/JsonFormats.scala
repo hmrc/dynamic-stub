@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.stub.dynamic
 
+import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-
 trait JsonFormats {
   def endpoint: EndPoint
 
@@ -85,13 +85,12 @@ trait JsonFormats {
 
     implicit val dataReads = mapReads(endpoint.keys)
 
-    Reads[Expectation] { jv =>
-      val testId = (jv \ "testId").as[String]
-      val data = (jv \ "data").as[Map[ConfigKey, ValueType]]
-      val delay = (jv \ "delay").asOpt[Long]
-      val resultCode = (jv \ "resultCode").asOpt[Int]
-      val timeToLive = (jv \ "timeToLive").asOpt[Long]
-      JsSuccess(Expectation(testId, endpoint, data, delay, resultCode, timeToLive))
-    }
+    ((__ \ "testId").read[String] and
+      (__ \ "data").read[Map[ConfigKey, ValueType]] and
+      (__ \ "delay").readNullable[Long] and
+      (__ \ "resultCode").readNullable[Int] and
+      (__ \ "timeToLive").readNullable[Long]
+    )((id, data, delay, resultCode, ttl) ⇒ Expectation(id, endpoint, data, delay, resultCode, ttl)
+      )
   }
 }

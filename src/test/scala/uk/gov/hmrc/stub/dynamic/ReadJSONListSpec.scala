@@ -17,7 +17,7 @@
 package uk.gov.hmrc.stub.dynamic
 
 import org.scalatest.BeforeAndAfterEach
-import play.api.libs.json.{JsNull, JsUndefined, Json}
+import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class ReadJSONListSpec extends UnitSpec with BeforeAndAfterEach with JsonFormats {

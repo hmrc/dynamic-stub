@@ -18,23 +18,22 @@ package uk.gov.hmrc.stub.dynamic.repository
 
 import java.net.URI
 
+import javax.inject.{Inject, Singleton}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{Json, Writes, _}
-import play.modules.reactivemongo.MongoDbConnection
-import reactivemongo.api.DB
+import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONInteger, BSONLong, BSONObjectID, BSONString, BSONValue}
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import reactivemongo.play.json.BSONFormats
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.ImplicitBSONHandlers.{BSONDocumentWrites ⇒ _, _}
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.{AtomicUpdate, BSONBuilderHelpers, DatabaseUpdate, ReactiveRepository}
+import uk.gov.hmrc.mongo.{BSONBuilderHelpers, ReactiveRepository}
 import uk.gov.hmrc.time.DateTimeUtils
 
 import scala.collection.Seq
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 case class ExpectationMongo(testId:     String,
                             template:   String,
@@ -53,9 +52,8 @@ object ExpectationSave {
 
   val mongoFormats: Format[ExpectationSave] = ReactiveMongoFormats.mongoEntity(
     {
-      implicit val oidFormat = ReactiveMongoFormats.objectIdFormats
 
-      implicit val expectationReads = Json.reads[ExpectationMongo]
+      implicit val expectationReads: Reads[ExpectationMongo] = Json.reads[ExpectationMongo]
 
       implicit val expectationSaveReads: Reads[ExpectationSave] =
         ((__ \ "_id").read[BSONObjectID] and
@@ -78,16 +76,9 @@ object ExpectationSave {
     })
 }
 
-object DynamicRepository extends MongoDbConnection {
-  lazy val mongo = new DynamicRepositoryTestDataMongoRepository
-
-  def apply(): DynamicTestDataRepository = mongo
-}
-
-class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
-  extends ReactiveRepository[ExpectationSave, BSONObjectID]("dynamic", mongo, ExpectationSave.mongoFormats, ReactiveMongoFormats.objectIdFormats)
-  with AtomicUpdate[ExpectationSave]
-  with DynamicTestDataRepository
+@Singleton
+class DynamicTestDataRepository @Inject() ()(implicit mongo: ReactiveMongoComponent)
+  extends ReactiveRepository[ExpectationSave, BSONObjectID]("dynamic", mongo.mongoConnector.db, ExpectationSave.mongoFormats, ReactiveMongoFormats.objectIdFormats)
   with BSONBuilderHelpers {
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[scala.Seq[Boolean]] = {
@@ -107,51 +98,36 @@ class DynamicRepositoryTestDataMongoRepository(implicit mongo: () => DB)
     )
   }
 
-  override def isInsertion(suppliedId: BSONObjectID, returned: ExpectationSave): Boolean =
-    suppliedId.equals(returned.id)
+  protected def findByTestId(testId: String): JsObject = Json.obj("expectation.testId" -> testId)
 
-  protected def findByTestId(testId: String) = BSONDocument("expectation.testId" -> BSONString(testId))
-
-  protected def bsonJson[T](entity: T)(implicit writes: Writes[T]) = BSONFormats.toBSON(Json.toJson(entity)).get
-
-  private def modifierForInsert(uriSeq: Seq[URI], expectation: ExpectationMongo): BSONDocument = {
-    val delay = optionalValues(expectation.delay, "expectation.delay", BSONLong)
-    val resultCode = optionalValues(expectation.resultCode, "expectation.resultCode", BSONInteger)
-    BSONDocument(
-      "$setOnInsert" -> BSONDocument("expiry" -> BSONDateTime(DateTimeUtils.now.getMillis + expectation.toLive.toMillis)),
-      "$setOnInsert" -> BSONDocument("expectation.testId" -> expectation.testId),
-      "$set" -> BSONDocument("expectation.template" -> expectation.template),
-      "$set" -> BSONDocument("uri" -> BSONArray(uriSeq.map(uri => BSONString(uri.toASCIIString))))
+  private def modifierForInsert(uriSeq: Seq[URI], expectation: ExpectationMongo): JsObject = {
+    val delay = optionalValues(expectation.delay, "expectation.delay")
+    val resultCode = optionalValues(expectation.resultCode, "expectation.resultCode")
+    Json.obj(
+      "$setOnInsert" -> Json.obj("expiry" -> (DateTimeUtils.now.getMillis + expectation.toLive.toMillis)),
+      "$setOnInsert" -> Json.obj("expectation.testId" -> expectation.testId),
+      "$set" -> Json.obj("expectation.template" -> expectation.template),
+      "$set" -> Json.obj("uri" -> Json.arr(uriSeq.map(uri => uri.toASCIIString)))
     ) ++ delay ++ resultCode
   }
 
-  override def add(uri: Seq[URI], expectation: ExpectationMongo): Future[DatabaseUpdate[ExpectationSave]] = {
-    atomicUpsert(findByTestId(expectation.testId), modifierForInsert(uri, expectation))
-  }
+  def add(uri: Seq[URI], expectation: ExpectationMongo)(implicit ec: ExecutionContext): Future[Option[ExpectationSave]] =
+    findAndUpdate(findByTestId(expectation.testId), modifierForInsert(uri, expectation), upsert = true).map(_.result[ExpectationSave])
 
-  override def findByIdAndUri(id: String, uri: String): Future[Option[ExpectationSave]] = {
-    collection.find(and(BSONDocument("expectation.testId" -> id) ++ BSONDocument("uri" -> uri))).one[ExpectationSave]
-  }
+  def findByIdAndUri(id: String, uri: String)(implicit ec: ExecutionContext): Future[Option[ExpectationSave]] =
+    collection.find(Json.obj("expectation.testId" -> id, "uri" -> uri), None).one[ExpectationSave]
 
-  override def removeById(id: String)(implicit ec: ExecutionContext): Future[WriteResult] = {
+  def removeById(id: String)(implicit ec: ExecutionContext): Future[WriteResult] =
     removeById(BSONObjectID(id.getBytes))
-  }
 
-  private def unset(key: String): BSONDocument = BSONDocument("$unset" -> BSONDocument(key -> 0L))
+  private def unset(key: String): JsObject = Json.obj("$unset" -> Json.obj(key -> 0L))
 
-  private def set[T](value: T, key: String, bsonObject: T => BSONValue): BSONDocument = BSONDocument("$set" -> BSONDocument(key -> bsonObject(value)))
+  private def set[T: Writes](value: T, key: String): JsObject = Json.obj("$set" -> Json.obj(key -> value))
 
-  private def optionalValues[T](option: Option[T], key: String, bsonObject: T => BSONValue): BSONDocument = {
+  private def optionalValues[T: Writes](option: Option[T], key: String): JsObject = {
     option.fold(unset(key)) {
-      value => set(value, key, bsonObject)
+      value => set(value, key)
     }
   }
 }
 
-trait DynamicTestDataRepository {
-  def removeById(id: String)(implicit ec: ExecutionContext): Future[WriteResult]
-
-  def add(uri: Seq[URI], expectation: ExpectationMongo): Future[DatabaseUpdate[ExpectationSave]]
-
-  def findByIdAndUri(id: String, uri: String): Future[Option[ExpectationSave]]
-}
