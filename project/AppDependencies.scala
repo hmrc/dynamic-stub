@@ -16,7 +16,8 @@ object AppDependencies {
         "uk.gov.hmrc"            %% "hmrctest"           % "3.9.0-play-26"     % "test",
         "org.pegdown"             %  "pegdown"           % "1.6.0"             % "test",
         "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"             % "test",
-        "org.mockito"             %% "mockito-scala"      % "1.15.0"             % "test"
+        "org.mockito"            %% "mockito-scala"      % "1.15.0"            % "test",
+        "uk.gov.hmrc"            %% "reactivemongo-test" % "4.21.0-play-26"    % "test"
   )
 
   def apply(): Seq[ModuleID] = compile ++ test

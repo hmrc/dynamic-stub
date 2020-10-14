@@ -1,6 +1,6 @@
 import PlayCrossCompilation._
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.{DefaultBuildSettings, SbtArtifactory}
+import uk.gov.hmrc.SbtArtifactory
 
 val microservice = Project("dynamic-stub", file("."))
   .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
@@ -13,7 +13,7 @@ val microservice = Project("dynamic-stub", file("."))
   )
   .settings(scalaVersion := "2.12.12")
   .settings(crossScalaVersions := Seq("2.11.12", "2.12.12"))
-  .settings(scalacOptions ++= Seq("-Xfatal-warnings", "-feature"))
+  .settings(scalacOptions ++= Seq("-Xfatal-warnings", "-feature", "-Xlint:-missing-interpolator,_"))
 
    .configs(IntegrationTest)
   .settings(playCrossCompilationSettings)

@@ -26,7 +26,7 @@ import uk.gov.hmrc.stub.dynamic.repository.DynamicTestDataRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID ⇒ Call,
+class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID => Call,
                                            val cache:    DynamicTestDataRepository,
                                            val endpoint: EndPoint)
   (implicit ec: ExecutionContext,
@@ -46,7 +46,9 @@ class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID ⇒ Call,
         saveToCache(update).map {
           case Some((uris, id)) => Created(Json.obj("uri" -> Json.toJson(uris.map(_.toString))))
             .withHeaders("Location" -> removeUrl(id).url)
-          case _ => BadRequest
+          case value =>
+            Logger.error(s"Did not receive URIs or BSON Ids from insert. saveToCache returned: $value")
+            BadRequest
         }
       }
     )
