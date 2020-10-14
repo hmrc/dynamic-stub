@@ -103,21 +103,21 @@ class DynamicTestDataRepository @Inject() ()(implicit mongo: ReactiveMongoCompon
 
   private def modifierForInsert(uriSeq: Seq[URI], expectation: ExpectationMongo): JsObject = {
 
-    val fieldUpdateOperators = List(
-      FieldOperator(SetOnInsertOp, Json.obj("expiry" -> (DateTimeUtils.now.getMillis + expectation.toLive.toMillis))),
-      FieldOperator(SetOnInsertOp, Json.obj("expectation.testId" -> expectation.testId)),
-      FieldOperator(SetOp, Json.obj("expectation.template" -> expectation.template)),
-      FieldOperator(SetOp, Json.obj("uri" -> uriSeq.map(uri => uri.toASCIIString))),
+    val fieldUpdates = List(
+      FieldUpdates(SetOnInsertOp, Json.obj("expiry" -> (DateTimeUtils.now.getMillis + expectation.toLive.toMillis))),
+      FieldUpdates(SetOnInsertOp, Json.obj("expectation.testId" -> expectation.testId)),
+      FieldUpdates(SetOp, Json.obj("expectation.template" -> expectation.template)),
+      FieldUpdates(SetOp, Json.obj("uri" -> uriSeq.map(uri => uri.toASCIIString))),
       setOrUnsetOperator(expectation.delay, "expectation.delay"),
       setOrUnsetOperator(expectation.resultCode, "expectation.resultCode")
     )
 
     // collect together all like operators to make a modifier Json document
     val groups: Map[String, JsObject] =
-      fieldUpdateOperators
+      fieldUpdates
         .groupBy(_.fieldOp)
-        .map { op: (FieldOp, List[FieldOperator]) =>
-          op._1.toString -> op._2.foldLeft(Json.obj())(_ ++ _.jsObject)
+        .map { case (fieldOp, listFieldUpdates) =>
+          fieldOp.toString -> listFieldUpdates.foldLeft(Json.obj())(_ ++ _.jsObject)
         }
 
     JsObject(groups)
@@ -136,15 +136,15 @@ class DynamicTestDataRepository @Inject() ()(implicit mongo: ReactiveMongoCompon
 
   def removeById(id: String)(implicit ec: ExecutionContext): Future[WriteResult] = {
     BSONObjectID.parse(id) match {
-      case Failure(exception)    => Future.failed(throw exception)
+      case Failure(exception)    => Future.failed(exception)
       case Success(bSONObjectID) => removeById(bSONObjectID)
     }
   }
 
-  private def setOrUnsetOperator[T: Writes](option: Option[T], key: String): FieldOperator = {
+  private def setOrUnsetOperator[T: Writes](option: Option[T], key: String): FieldUpdates = {
 
-      def unset(key: String) = FieldOperator(UnsetOp, Json.obj(key -> 0L))
-      def set(value: T, key: String): FieldOperator = FieldOperator(SetOp, Json.obj(key -> value))
+      def unset(key: String) = FieldUpdates(UnsetOp, Json.obj(key -> 0L))
+      def set(value: T, key: String): FieldUpdates = FieldUpdates(SetOp, Json.obj(key -> value))
 
     option.fold(unset(key)) {
       value => set(value, key)
@@ -164,4 +164,4 @@ case object SetOp extends FieldOp
 case object UnsetOp extends FieldOp
 case object SetOnInsertOp extends FieldOp
 
-case class FieldOperator(fieldOp: FieldOp, jsObject: JsObject)
+case class FieldUpdates(fieldOp: FieldOp, jsObject: JsObject)
