@@ -19,29 +19,39 @@ package uk.gov.hmrc.stub.dynamic
 import java.net.URI
 
 import org.mockito.ArgumentMatchersSugar
-import org.mockito.Mockito._
-import org.scalatest.Matchers
 import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, Matchers}
 import play.api.http.{HeaderNames, Status}
-import play.api.libs.json.Json
-import play.api.mvc.{Call, Headers}
+import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.mvc.{Call, ControllerComponents, Headers}
 import play.api.test.{FakeRequest, Helpers}
 import play.twirl.api.TxtFormat
-import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.stub.dynamic.repository.{DynamicTestDataRepository, ExpectationMongo, ExpectationSave}
+import uk.gov.hmrc.stub.dynamic.repository.{DynamicTestDataRepository, ExpectationMongo}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
-class DynamicStubDataControllerSpec extends UnitSpec with MockitoSugar with Matchers with ArgumentMatchersSugar {
+class DynamicStubDataControllerSpec
+  extends UnitSpec
+  with MockitoSugar
+  with Matchers
+  with ArgumentMatchersSugar
+  with MongoSpecSupport
+  with BeforeAndAfterEach {
 
-  def generateDeletionCall(id: BSONObjectID) = Call("DELETE", "/some/uri/to/delete/" + id.stringify)
-  val mockRepo = mock[DynamicTestDataRepository]
-  implicit val cc = Helpers.stubControllerComponents()
+  def generateDeletionCall(id: BSONObjectID): Call = Call("DELETE", "/some/uri/to/delete/" + id.stringify)
+
+  val dynamicStubRepo = new DynamicTestDataRepository()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    dropTestCollection("dynamic")
+  }
+
+  implicit val cc: ControllerComponents = Helpers.stubControllerComponents()
   object Keys {
-    val nino = SingleConfigKey("nino")
+    val nino: SingleConfigKey = SingleConfigKey("nino")
   }
 
   val templates = Seq(
@@ -51,16 +61,16 @@ class DynamicStubDataControllerSpec extends UnitSpec with MockitoSugar with Matc
     }
   )
 
-  val endpoint = new EndPoint {
+  val endpoint: EndPoint = new EndPoint {
     override def keys: Seq[ConfigKey] = Seq(Keys.nino)
     override def defaults: Map[ConfigKey, ValueType] = Map.empty
     override def bodyTemplate: DataSupplier ⇒ TxtFormat.Appendable = _ ⇒ TxtFormat.empty
     override def urlTemplates: Seq[UrlTemplate] = templates
   }
 
-  val controller = new DynamicStubDataController(generateDeletionCall, mockRepo, endpoint)
+  val controller = new DynamicStubDataController(generateDeletionCall, dynamicStubRepo, endpoint)
 
-  val validPayload = Json.parse("""{
+  val validPayload: JsValue = Json.parse("""{
     "testId":"1234567",
     "name":"CID",
     "service":"find",
@@ -85,15 +95,14 @@ class DynamicStubDataControllerSpec extends UnitSpec with MockitoSugar with Matc
     "delay":5000,
     "timeToLive":300000 }""")
 
-  val invalidPayload = Json.obj("some" → true, "random" → List("yup"), "json" → 42)
+  val invalidPayload: JsObject = Json.obj("some" → true, "random" → List("yup"), "json" → 42)
 
-  val expectationMongo = ExpectationMongo("testId", "template", None, None, None)
+  val expectationMongo: ExpectationMongo = ExpectationMongo("testId", "template", None, None, None)
 
   val fakeUri = new URI("http", "localhost", "/foot/bar", "baz")
 
-  val expectationSave = ExpectationSave(BSONObjectID.generate(), Seq(fakeUri), expectationMongo)
-
   "The DynamicStubDataController" should {
+
     "return a 400 if the Expectation json payload is incorrect" in {
 
       val fakeRequest = FakeRequest("DELETE", "someUri", Headers(), invalidPayload)
@@ -101,24 +110,33 @@ class DynamicStubDataControllerSpec extends UnitSpec with MockitoSugar with Matc
       result.header.status shouldBe Status.BAD_REQUEST
 
     }
-    "return a 201 if the json payload is correct and we create the stub, including the remove URL in the Location header" in {
 
-      when(mockRepo.add(any, any)(any)).thenReturn(Future.successful(Some(expectationSave)))
+    "return a 201 if the json payload is correct and we create the stub, including the remove URL in the Location header" in {
 
       val fakeRequest = FakeRequest("POST", "someUri", Headers(), validPayload)
       val result = await(controller.recordService()(fakeRequest))
 
       result.header.status shouldBe Status.CREATED
-      result.header.headers(HeaderNames.LOCATION) shouldBe generateDeletionCall(expectationSave.id).url
+      result.header.headers(HeaderNames.LOCATION) should startWith("/some/uri/to/delete/")
 
     }
+
     "return a 204 if asked to remove a stub" in {
-      when(mockRepo.removeById(any)(any)).thenReturn(Future.successful(UpdateWriteResult(true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
 
-      val fakeRequest = FakeRequest("DELETE", "someUri")
-      val result = await(controller.removeService("ik")(fakeRequest))
+      val fakePost = FakeRequest("POST", "someUri", Headers(), validPayload)
+      val result1 = await(controller.recordService()(fakePost))
 
-      result.header.status shouldBe Status.NO_CONTENT
+      result1.header.status shouldBe Status.CREATED
+      val deleteLocation = result1.header.headers(HeaderNames.LOCATION)
+      deleteLocation should startWith("/some/uri/to/delete/")
+
+      val bsonId = deleteLocation.stripPrefix("/some/uri/to/delete/")
+
+      val fakeDelete = FakeRequest("DELETE", deleteLocation)
+      val result2 = await(controller.removeService(bsonId)(fakeDelete))
+
+      result2.header.status shouldBe Status.NO_CONTENT
+
     }
   }
 
