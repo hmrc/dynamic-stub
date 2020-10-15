@@ -116,8 +116,9 @@ class DynamicTestDataRepository @Inject() ()(implicit mongo: ReactiveMongoCompon
     val groups: Map[String, JsObject] =
       fieldUpdates
         .groupBy(_.fieldOp)
-        .map { case (fieldOp, listFieldUpdates) =>
-          fieldOp.toString -> listFieldUpdates.foldLeft(Json.obj())(_ ++ _.jsObject)
+        .map {
+          case (fieldOp, listFieldUpdates) =>
+            fieldOp.toString -> listFieldUpdates.foldLeft(Json.obj())(_ ++ _.jsObject)
         }
 
     JsObject(groups)

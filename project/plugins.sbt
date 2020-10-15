@@ -17,6 +17,4 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-play-cross-compilation" % "0.19.0")
-
 addSbtPlugin("uk.gov.hmrc" % "sbt-settings" % "4.5.0")
