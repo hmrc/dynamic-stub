@@ -40,7 +40,7 @@ trait ServiceStubResponse {
     } yield uri
 
     if (resources.isEmpty) {
-      Logger.error("Failed to record resource URI's from input request and template definition! Check the keys configured for the request!")
+      Logger("Failed to record resource URI's from input request and template definition! Check the keys configured for the request!")
       Future.successful(None)
     } else {
       val mongoExpectation = ExpectationMongo(expectation.testId,

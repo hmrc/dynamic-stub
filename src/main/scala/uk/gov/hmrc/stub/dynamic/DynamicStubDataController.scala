@@ -39,7 +39,7 @@ class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID => Call,
   def recordService = Action.async(parse.json) { implicit request =>
     request.body.validate[Expectation].fold(
       errors => {
-        Logger.error(s"Received error from parsing json $errors")
+        Logger(s"Received error from parsing json $errors")
         Future.successful(BadRequest(Json.obj("message" -> JsError.toJson(errors))))
       },
       update => {
@@ -47,7 +47,7 @@ class DynamicStubDataController @Inject() (removeUrl:    BSONObjectID => Call,
           case Some((uris, id)) => Created(Json.obj("uri" -> Json.toJson(uris.map(_.toString))))
             .withHeaders("Location" -> removeUrl(id).url)
           case value =>
-            Logger.error(s"Did not receive URIs or BSON Ids from insert. saveToCache returned: $value")
+            Logger(s"Did not receive URIs or BSON Ids from insert. saveToCache returned: $value")
             BadRequest
         }
       }
