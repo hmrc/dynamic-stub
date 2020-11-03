@@ -18,7 +18,7 @@ package uk.gov.hmrc.stub.dynamic
 
 import java.net.URI
 
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc._
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.stub.dynamic.repository.{DynamicTestDataRepository, ExpectationMongo}
@@ -26,7 +26,7 @@ import uk.gov.hmrc.stub.dynamic.repository.{DynamicTestDataRepository, Expectati
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait ServiceStubResponse {
+trait ServiceStubResponse extends Logging {
 
   def cache: DynamicTestDataRepository
 
@@ -40,7 +40,7 @@ trait ServiceStubResponse {
     } yield uri
 
     if (resources.isEmpty) {
-      Logger.error("Failed to record resource URI's from input request and template definition! Check the keys configured for the request!")
+      logger.error("Failed to record resource URI's from input request and template definition! Check the keys configured for the request!")
       Future.successful(None)
     } else {
       val mongoExpectation = ExpectationMongo(expectation.testId,
