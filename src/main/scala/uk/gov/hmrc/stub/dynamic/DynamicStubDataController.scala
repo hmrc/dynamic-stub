@@ -17,7 +17,7 @@
 package uk.gov.hmrc.stub.dynamic
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Logger, Logging}
+import play.api.Logging
 import play.api.libs.json._
 import play.api.mvc.{BaseController, Call, ControllerComponents}
 import reactivemongo.bson.BSONObjectID
