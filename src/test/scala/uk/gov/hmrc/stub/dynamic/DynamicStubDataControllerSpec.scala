@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.stub.dynamic
 import java.net.URI
 
 import org.mockito.ArgumentMatchersSugar
-import org.scalatest.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsObject, JsValue, Json}
@@ -27,7 +27,7 @@ import play.api.mvc.{Call, ControllerComponents, Headers}
 import play.api.test.{FakeRequest, Helpers}
 import play.twirl.api.TxtFormat
 import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.gg.test.UnitSpec
 import uk.gov.hmrc.stub.dynamic.repository.{DynamicTestDataRepository, ExpectationMongo}
 
 import scala.concurrent.ExecutionContext.Implicits.global
