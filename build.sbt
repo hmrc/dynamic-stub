@@ -2,12 +2,12 @@ import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtArtifactory
 
 val microservice = Project("dynamic-stub", file("."))
-  .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
+  .enablePlugins(SbtArtifactory)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     majorVersion                     := 0,
     libraryDependencies              ++= AppDependencies(),
-    makePublicallyAvailableOnBintray := true,
+    isPublicArtefact                 := true,
 
   )
   .settings(scalaVersion := "2.12.12")
