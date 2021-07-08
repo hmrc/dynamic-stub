@@ -1,8 +1,6 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.SbtArtifactory
 
 val microservice = Project("dynamic-stub", file("."))
-  .enablePlugins(SbtArtifactory)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     majorVersion                     := 0,
