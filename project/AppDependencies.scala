@@ -13,7 +13,7 @@ object AppDependencies {
 
   val test: Seq[ModuleID] = Seq(
         "com.typesafe.play"      %% "play-test"          % PlayVersion.current % "test",
-        "uk.gov.hmrc" %% "government-gateway-test" % "4.2.0-play-27" % "test",
+        "uk.gov.hmrc" %% "government-gateway-test" % "4.3.0-play-27" % "test",
        // "uk.gov.hmrc"            %% "hmrctest"           % "3.9.0-play-26"     % "test",
         "org.pegdown"             %  "pegdown"           % "1.6.0"             % "test",
         "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"             % "test",
